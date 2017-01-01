@@ -96,8 +96,12 @@ class PADMail:
         elif self.bonus_id == 9902:
             return "%d Pal points" % self.amount
         else:
-            jp_id = us_to_jp_map.get(self.bonus_id, self.bonus_id)
-            return monster_data[jp_id]['name']
+            try:
+                jp_id = us_to_jp_map.get(self.bonus_id, self.bonus_id)
+                return monster_data[jp_id]['name']
+            except KeyError:
+                print "Unidentified mail!"
+                print self.__dict__
 
 
 def parse_mail(mail_contents):

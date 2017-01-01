@@ -1,7 +1,7 @@
 """http://code.activestate.com/recipes/491264-mini-fake-dns-server/"""
 from __future__ import print_function
 
-import socket, sys
+import sys
 import binascii,copy,struct, time
 from dnslib import DNSRecord,RR,QTYPE,RCODE,parse_time,A
 from dnslib.server import DNSServer,DNSHandler,BaseResolver,DNSLogger
@@ -9,6 +9,7 @@ from dnslib.label import DNSLabel
 import wx
 
 import custom_events
+from utils import *
 
 class MyDNSLogger(DNSLogger):
     def __init__(self, wxDest):
@@ -107,7 +108,7 @@ class InterceptResolver(BaseResolver):
         qtype = QTYPE[request.q.qtype]
         if qname.matchGlob("api-*padsv.gungho.jp."):
             config = wx.ConfigBase.Get()
-            host = config.Read("host") or socket.gethostbyname(socket.gethostname())
+            host = config.Read("host") or get_ip()
             reply.add_answer(RR(qname,QTYPE.A,rdata=A(host)))
             evt = custom_events.wxStatusEvent(message="Got DNS Request")
             wx.PostEvent(self.status_ctrl,evt)
@@ -116,6 +117,8 @@ class InterceptResolver(BaseResolver):
             time.sleep(0.5) # we need to sleep until the proxy is up, half a second should do it...
         # Otherwise proxy
         if not reply.rr:
+            evt = custom_events.wxStatusEvent(message="Proxying DNS Request")
+            wx.PostEvent(self.status_ctrl,evt)
             if handler.protocol == 'udp':
                 proxy_r = request.send(self.address,self.port)
             else:
@@ -139,7 +142,7 @@ def serveDNS(logger, status_ctrl, main_frame):
     }
 
     config = wx.ConfigBase.Get()
-    host = config.Read("host") or socket.gethostbyname(socket.gethostname())
+    host = config.Read("host") or get_ip()
     dnsport = config.Read("dnsport") or "53"
     try:
         udp_server = DNSServer(resolver,
@@ -158,6 +161,6 @@ def serveDNS(logger, status_ctrl, main_frame):
 
     try:
         while udp_server.isAlive():
-            time.sleep(1)
+            time.sleep(.1)
     except KeyboardInterrupt:
         sys.exit()

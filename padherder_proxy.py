@@ -1,37 +1,33 @@
 #!/usr/bin/env python2
 
-
+# System imports
 import json
-import os
-import requests
-import sys
-import time
-import cPickle
-import select, socket, SocketServer, thread, urlparse, cStringIO
-import signal
 import re
-try: # new mitmproxy?
-    from mitmproxy import controller, proxy, flow, dump, cmdline, contentviews
-    from mitmproxy.proxy.server import ProxyServer
-except ImportError: # old mitmproxy?
-    from libmproxy import controller, proxy, flow, dump, cmdline, contentviews
-    from libmproxy.proxy.server import ProxyServer
+import requests
+import socket
+import sys
+import thread
+from distutils.version import LooseVersion
+
+# mitmproxy
+from libmproxy import controller, proxy, flow, dump, cmdline, contentviews
+from libmproxy.proxy.server import ProxyServer
+
+# wxpython
 import wx
 try: #new wx
     from wx.lib.agw.hyperlink import HyperLinkCtrl
 except ImportError: #old wx
     from wx.lib.hyperlink import HyperlinkCtrl
 import wx.grid
-from urlparse import urljoin
-import traceback
-from distutils.version import LooseVersion
 
+# Local imports
+import custom_events
 import dnsproxy
 import padherder_sync
-import custom_events
 from constants import *
 from mail_parser import *
-import datetime
+from utils import *
 
 PH_PROXY_VERSION = "2.6"
 
@@ -167,64 +163,6 @@ def serve_app(master):
 def run_proxy(master):
     master.run()
 
-class MyGridTable(wx.grid.PyGridTableBase):
-    def __init__(self, sync_records):
-        self.sync_records = sync_records
-    
-    def GetNumberRows(self):
-        return len(self.sync_records)
-
-    def GetNumberCols(self):
-        """Return the number of columns in the grid"""
-        return 3
-
-    def IsEmptyCell(self, row, col):
-        """Return True if the cell is empty"""
-        return False
-
-    def GetTypeName(self, row, col):
-        """Return the name of the data type of the value in the cell"""
-        return None
-
-    def GetValue(self, row, col):
-        rec = self.sync_records[row]
-        if col == 0:
-            if rec.operation == SYNC_ADD:
-                return "Add"
-            elif rec.operation == SYNC_UPDATE:
-                return "Update"
-            elif rec.operation == SYNC_UPDATE_MATERIAL:
-                return "Material"
-            elif rec.operation == SYNC_DELETE:
-                return "Delete"
-            else:
-                return "UNKNOWN"
-        elif col == 1:
-            return rec.base_data['name']
-        elif col == 2:
-            return ""
-        else:
-            return "UNKNOWN"
-
-    def SetValue(self, row, col, value):
-        rec = self.sync_records[row]
-        rec.action = value
-    
-    def GetColLabelValue(self, col):
-        if col == 0:
-            return "Operation"
-        elif col == 1:
-            return "Name"
-        elif col == 2:
-            return "Action"
-            
-    def GetAttr(self, row, col, someExtraParameter ):
-        if col != 2:
-            attr = wx.grid.wxGridCellAttr()
-            attr.SetReadOnly( 1 )
-            return attr
-        return None
-        
 class MailGridTable(wx.grid.PyGridTableBase):
     def __init__(self, mails, main_tab):
         wx.grid.PyGridTableBase.__init__(self)
@@ -290,7 +228,7 @@ class MainTab(wx.Panel):
         grid = wx.GridBagSizer(hgap=5, vgap=10)
 
         config = wx.ConfigBase.Get()
-        host = config.Read("host") or socket.gethostbyname(socket.gethostname())
+        host = config.Read("host") or get_ip()
 
         start_instructions = wx.StaticText(self, label="Just the first time, you need to add the HTTPS certificate to your iOS/Android device. To do this, go to your wifi settings and set up a manual HTTP proxy. Set the server to '%s' and the port to 8080. Then visit http://mitm.it in Safari/Chrome, click the link for your device, and install the configuration profile when asked. After this is done, turn off the HTTP proxy." % host)
         start_instructions.Wrap(580)
@@ -347,7 +285,7 @@ class SettingsTab(wx.Panel):
         wx.Panel.__init__(self, parent)
         
         config = wx.ConfigBase.Get()
-        host = config.Read("host") or socket.gethostbyname(socket.gethostname())
+        host = config.Read("host") or get_ip()
         grid = wx.GridBagSizer(hgap=5, vgap=5)
         
         lblUsername = wx.StaticText(self, label="Padherder Username:")
@@ -533,7 +471,7 @@ class MainWindow(wx.Frame):
             region = 'JP'
         
         config = wx.ConfigBase.Get()
-        host = config.Read("host") or socket.gethostbyname(socket.gethostname())
+        host = config.Read("host") or get_ip()
         httpsport = config.Read("httpsport") or "443"
 
         try:
@@ -583,7 +521,7 @@ def main():
     wx.ConfigBase.Set(config)
     frame = MainWindow(None, "Padherder Proxy v%s" % PH_PROXY_VERSION)
     
-    host = config.Read("host") or socket.gethostbyname(socket.gethostname())
+    host = config.Read("host") or get_ip()
     
     logger = dnsproxy.MyDNSLogger(frame.dns_tab)
     thread.start_new_thread(dnsproxy.serveDNS, (logger, frame.main_tab, frame))
