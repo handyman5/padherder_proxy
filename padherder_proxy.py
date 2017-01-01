@@ -14,6 +14,8 @@ from distutils.version import LooseVersion
 from libmproxy import controller, proxy, flow, dump, cmdline, contentviews
 from libmproxy.proxy.server import ProxyServer
 
+import tzlocal
+
 # wxpython
 import wx
 try: #new wx
@@ -200,7 +202,7 @@ class MailGridTable(wx.grid.PyGridTableBase):
         elif col == 4:
             return mail.subject
         elif col == 5:
-            now = datetime.datetime.now(Pacific)
+            now = datetime.datetime.now(tzlocal.get_localzone())
             diff = now - mail.date
             if diff.days > 0:
                 return "%dd" % diff.days
