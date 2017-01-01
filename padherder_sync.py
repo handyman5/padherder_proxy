@@ -1,12 +1,14 @@
-import requests
-import os
-import time
 import cPickle
-import sys
 import json
-import wx
-import custom_events
+import os
+import requests
+import sys
+import time
 import traceback
+
+import wx
+
+import custom_events
 from constants import *
 
 __version__ = '0.1'
