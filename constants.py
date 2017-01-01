@@ -28,12 +28,12 @@ SYNC_ACTION_DELETE = "Delete"
 SYNC_ACTION_IGNORE = "Ignore"
 
 MAIL_TYPE_MAP = {
-  0: 'Friend Request',
-  1: 'Announcement',
-  2: 'Quest Reward',
-  3: 'Gift',
-  4: 'Friend Message',
-  5: 'Best Friend Request',
-  6: 'Memorial Roll',
-  7: 'Dungeon',
+    0: 'Friend Request',
+    1: 'Announcement',
+    2: 'Quest Reward',
+    3: 'Gift',
+    4: 'Friend Message',
+    5: 'Best Friend Request',
+    6: 'Memorial Roll',
+    7: 'Dungeon',
 }
