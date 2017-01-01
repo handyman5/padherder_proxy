@@ -1,9 +1,7 @@
 *.pyc
 *.pickle
 build
-captured_data.txt
-captured_download_limited_bonus_data.txt
-captured_mail.txt
+captured_*.txt
 dist
 padherder_proxy.spec
 padherder_proxy_settings.txt
