@@ -1,11 +1,13 @@
 """http://code.activestate.com/recipes/491264-mini-fake-dns-server/"""
 from __future__ import print_function
 
+import binascii
 import sys
-import binascii,copy,struct, time
+import time
+
 from dnslib import DNSRecord,RR,QTYPE,RCODE,parse_time,A
 from dnslib.server import DNSServer,DNSHandler,BaseResolver,DNSLogger
-from dnslib.label import DNSLabel
+
 import wx
 
 import custom_events
@@ -19,7 +21,7 @@ class MyDNSLogger(DNSLogger):
     def send_log_event(self, msg):
         evt = custom_events.wxLogEvent(message=msg)            
         wx.PostEvent(self.wxDest,evt)
-        
+
     def log_recv(self,handler,data):
         self.send_log_event("%sReceived: [%s:%d] (%s) <%d> : %s" % (
                     self.log_prefix(handler),
@@ -117,8 +119,6 @@ class InterceptResolver(BaseResolver):
             time.sleep(0.5) # we need to sleep until the proxy is up, half a second should do it...
         # Otherwise proxy
         if not reply.rr:
-            evt = custom_events.wxStatusEvent(message="Proxying DNS Request")
-            wx.PostEvent(self.status_ctrl,evt)
             if handler.protocol == 'udp':
                 proxy_r = request.send(self.address,self.port)
             else:
@@ -161,6 +161,6 @@ def serveDNS(logger, status_ctrl, main_frame):
 
     try:
         while udp_server.isAlive():
-            time.sleep(.1)
+            time.sleep(1)
     except KeyboardInterrupt:
         sys.exit()
