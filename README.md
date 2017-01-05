@@ -24,6 +24,7 @@ If you're on Mac OS X:
 1. install wxpython from homebrew: `brew install wxpython`
 1. make a virtualenv: `virtualenv .venv ; source .venv/bin/activate`
 1. install the dependencies: `pip install -r requirements.txt`
+1. open a privileged shell: `sudo bash ; source .venv/bin/activate`
 1. use the python wrapper to set paths: `./python_mac padherder_proxy.py`
 
 # Instructions
